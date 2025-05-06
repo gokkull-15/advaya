@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as openpgp from "openpgp";
 import WitnessForm from "./pages/WitnessForm";
-import OfficerWitnessViewer from "./pages/OfficerWitnessViewer";
+import OfficerWitnessViewer from "./pages/OfficerWitnessPage";
 
 const Gen = () => {
   const [officerPublicKey, setOfficerPublicKey] = useState("");
