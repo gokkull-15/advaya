@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color: #1A1A1A;
+    background-color: #ffffff;
+  }
+  
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1A1A1A;
+  }
+  
+  .nav-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .wallet-button {
+    background: #f5f5f5;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #1A1A1A;
+  }
+  
+  .main-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4rem;
+  }
+  
+  .content-left {
+    max-width: 600px;
+  }
+  
+  .title {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    color: #1A1A1A;
+  }
+  
+  .description {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+  
+  .file-button {
+    background: #1A1A1A;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .file-button:hover {
+    background: #333;
+  }
+  
+  .features-section {
+    margin-top: 4rem;
+  }
+  
+  .features-tag {
+    background: #CBFF96;
+    color: #1A1A1A;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+  
+  .features-description {
+    color: #666;
+    font-size: 1.1rem;
+    max-width: 800px;
+    margin-bottom: 3rem;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  
+  .feature-card {
+    padding: 2rem;
+    border-radius: 12px;
+    min-height: 200px;
+  }
+  
+  .feature-card:nth-child(1) {
+    background: #f5f5f5;
+  }
+  
+  .feature-card:nth-child(2) {
+    background: #a5ff4b;
+  }
+  
+  .feature-card:nth-child(3) {
+    background: #1A1A1A;
+    color: white;
+  }
+
+
+  
