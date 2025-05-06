@@ -12,6 +12,132 @@ const LANGUAGES = {
   hindi: { code: 'hi-IN', label: 'Hindi', nativeLabel: 'हिन्दी', backendCode: 'hi' }
 };
 
+// Language-specific UI text
+// Language-specific UI text
+const UI_TEXT = {
+  english: {
+    chatTitle: 'AI Lawyer Chat',
+    chatDescription: 'Ask legal questions in your preferred language using voice or text',
+    recording: 'Recording...',
+    speakNow: 'Speak now...',
+    aiThinking: 'AI is thinking...',
+    typeMessage: 'Type your message...',
+    speechRecognitionError: 'Speech recognition is not supported in this browser.',
+    speechSynthesisError: 'Text-to-speech is not supported in this browser.',
+    recognitionError: 'Error in speech recognition. Please try again.',
+    noSpeechError: 'No speech detected. Please speak clearly and try again.',
+    audioCaptureError: 'Microphone access denied or unavailable. Please check your settings.',
+    notAllowedError: 'Speech recognition permission denied. Please enable microphone access.'
+  },
+  tamil: {
+    chatTitle: 'AI வழக்கறிஞர் அரட்டை',
+    chatDescription: 'உங்கள் விருப்பமான மொழியில் குரல் அல்லது உரை மூலம் சட்ட கேள்விகளைக் கேளுங்கள்',
+    recording: 'பதிவு செய்கிறது...',
+    speakNow: 'இப்போது பேசுங்கள்...',
+    aiThinking: 'AI சிந்திக்கிறது...',
+    typeMessage: 'உங்கள் செய்தியை தட்டச்சு செய்யவும்...',
+    speechRecognitionError: 'இந்த உலாவியில் பேச்சு அங்கீகாரம் ஆதரிக்கப்படவில்லை.',
+    speechSynthesisError: 'இந்த உலாவியில் பேச்சு உருவாக்கம் ஆதரிக்கப்படவில்லை.',
+    recognitionError: 'பேச்சு அங்கீகாரத்தில் பிழை. மீண்டும் முயற்சிக்கவும்.',
+    noSpeechError: 'பேச்சு கண்டறியப்படவில்லை. தெளிவாக பேசி மீண்டும் முயற்சிக்கவும்.',
+    audioCaptureError: 'மைக்ரோபோன் அணுகல் மறுக்கப்பட்டது அல்லது கிடைக்கவில்லை. உங்கள் அமைப்புகளை சரிபார்க்கவும்.',
+    notAllowedError: 'பேச்சு அங்கீகார அனுமதி மறுக்கப்பட்டது. மைக்ரோபோன் அணுகலை இயக்கவும்.'
+  },
+  kannada: {
+    chatTitle: 'AI ವಕೀಲ ಚಾಟ್',
+    chatDescription: 'ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯಲ್ಲಿ ಧ್ವನಿ ಅಥವಾ ಪಠ್ಯದ ಮೂಲಕ ಕಾನೂನು ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ',
+    recording: 'ರೆಕಾರ್ಡಿಂಗ್...',
+    speakNow: 'ಈಗ ಮಾತನಾಡಿ...',
+    aiThinking: 'AI ಯೋಚಿಸುತ್ತಿದೆ...',
+    typeMessage: 'ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಟೈಪ್ ಮಾಡಿ...',
+    speechRecognitionError: 'ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಭಾಷಣ ಗುರುತಿಸುವಿಕೆಯನ್ನು ಬೆಂಬಲಿಸಲಾಗಿಲ್ಲ.',
+    speechSynthesisError: 'ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಪಠ್ಯ-ಭಾಷಣವನ್ನು ಬೆಂಬಲಿಸಲಾಗಿಲ್ಲ.',
+    recognitionError: 'ಭಾಷಣ ಗುರುತಿಸುವಿಕೆಯಲ್ಲಿ ದೋಷ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    noSpeechError: 'ಯಾವುದೇ ಭಾಷಣ ಕಂಡುಬಂದಿಲ್ಲ. ಸ್ಪಷ್ಟವಾಗಿ ಮಾತನಾಡಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    audioCaptureError: 'ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶವನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ ಅಥವಾ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
+    notAllowedError: 'ಭಾಷಣ ಗುರುತಿಸುವಿಕೆಯ ಅನುಮತಿಯನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ. ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.'
+  },
+  telugu: {
+    chatTitle: 'AI లాయర్ చాట్',
+    chatDescription: 'మీకు ఇష్టమైన భాషలో వాయిస్ లేదా టెక్స్ట్ ద్వారా చట్టపరమైన ప్రశ్నలు అడగండి',
+    recording: 'రికార్డింగ్...',
+    speakNow: 'ఇప్పుడు మాట్లాడండి...',
+    aiThinking: 'AI ఆలోచిస్తోంది...',
+    typeMessage: 'మీ సందేశాన్ని టైప్ చేయండి...',
+    speechRecognitionError: 'ఈ బ్రౌజర్‌లో స్పీచ్ రికగ్నిషన్ సపోర్ట్ చేయబడదు.',
+    speechSynthesisError: 'ఈ బ్రౌజర్‌లో టెక్స్ట్-టు-స్పీచ్ సపోర్ట్ చేయబడదు.',
+    recognitionError: 'స్పీచ్ రికగ్నిషన్‌లో లోపం. మళ్లీ ప్రయత్నించండి.',
+    noSpeechError: 'మాటలు కనిపించలేదు. స్పష్టంగా మాట్లాడి మళ్లీ ప్రయత్నించండి.',
+    audioCaptureError: 'మైక్రోఫోన్ యాక్సెస్ నిరాకరించబడింది లేదా అందుబాటులో లేదు. మీ సెట్టింగ్‌లను తనిఖీ చేయండి.',
+    notAllowedError: 'స్పీచ్ రికగ్నిషన్ అనుమతి నిరాకరించబడింది. మైక్రోఫోన్ యాక్సెస్‌ను ఆన్ చేయండి.'
+  },
+  hindi: {
+    chatTitle: 'AI वकील चैट',
+    chatDescription: 'अपनी पसंदीदा भाषा में आवाज या टेक्स्ट के माध्यम से कानूनी सवाल पूछें',
+    recording: 'रिकॉर्डिंग...',
+    speakNow: 'अब बोलें...',
+    aiThinking: 'AI सोच रहा है...',
+    typeMessage: 'अपना संदेश टाइप करें...',
+    speechRecognitionError: 'इस ब्राउज़र में वाक् पहचान समर्थित नहीं है।',
+    speechSynthesisError: 'इस ब्राउज़र में टेक्स्ट-टू-स्पीच समर्थित नहीं है।',
+    recognitionError: 'वाक् पहचान में त्रुटि। कृपया फिर से प्रयास करें।',
+    noSpeechError: 'कोई वाक् नहीं मिली। स्पष्ट रूप से बोलें और फिर से प्रयास करें।',
+    audioCaptureError: 'माइक्रोफ़ोन तक पहुंच अस्वीकृत है या उपलब्ध नहीं है। कृपया अपनी सेटिंग्स जांचें।',
+    notAllowedError: 'वाक् पहचान की अनुमति अस्वीकृत है। कृपया माइक्रोफ़ोन पहुंच सक्षम करें।'
+  }
+};
+
+// Speech Services
+const startSpeechRecognition = (language, onInterimResult, onFinalResult) => {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert(UI_TEXT[language].speechRecognitionError);
+    return { stop: () => {} };
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  
+  recognition.lang = LANGUAGES[language].code;
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map(result => result[0].transcript)
+      .join('')
+      .trim();
+
+    // Ignore empty or nonsensical transcripts
+    if (!transcript || /^\s*[a-zA-Z0-9]{10,}\s*$/.test(transcript)) {
+      return; // Skip invalid input like "bjdgsdgdfs"
+    }
+    
+    if (event.results[0].isFinal) {
+      onFinalResult(transcript);
+    } else {
+      onInterimResult(transcript);
+    }
+  };
+  
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+    const errorMessages = {
+      'no-speech': UI_TEXT[language].noSpeechError,
+      'audio-capture': UI_TEXT[language].audioCaptureError,
+      'not-allowed': UI_TEXT[language].notAllowedError
+    };
+    const errorMessage = errorMessages[event.error] || UI_TEXT[language].recognitionError;
+    alert(errorMessage);
+  };
+  
+  recognition.onend = () => {
+    recognition.stop();
+  };
+
+  recognition.start();
+  return { stop: () => recognition.stop() };
+};
+
 // Message Component
 const MessageItem = ({ message }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -25,7 +151,6 @@ const MessageItem = ({ message }) => {
       setIsSpeaking(true);
       speakText(message.text, message.language);
       
-      // Set timeout to reset speaking state when done
       const utterance = new SpeechSynthesisUtterance(message.text);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -77,73 +202,43 @@ const MessageItem = ({ message }) => {
   );
 };
 
-// Speech Services
-const startSpeechRecognition = (language, onInterimResult, onFinalResult) => {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Speech recognition is not supported in this browser.');
-    return { stop: () => {} };
-  }
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-  
-  recognition.lang = LANGUAGES[language].code;
-  recognition.continuous = false; // Changed to false to stop after first result
-  recognition.interimResults = true;
-  
-  recognition.onresult = (event) => {
-    const transcript = Array.from(event.results)
-      .map(result => result[0].transcript)
-      .join('');
-    
-    if (event.results[0].isFinal) {
-      onFinalResult(transcript);
-    } else {
-      onInterimResult(transcript);
-    }
-  };
-  
-  recognition.onerror = (event) => {
-    console.error('Speech recognition error', event.error);
-  };
-  
-  recognition.start();
-  return { stop: () => recognition.stop() };
-};
 
 const speakText = (text, language) => {
   if (!('speechSynthesis' in window)) {
-    alert('Text-to-speech is not supported in this browser.');
+    alert(UI_TEXT[language].speechSynthesisError);
     return;
   }
 
-  // Cancel any ongoing speech
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = LANGUAGES[language].code;
   
-  // Get voices and try to find a matching one
   const voices = window.speechSynthesis.getVoices();
-  
-  // Try to find a voice for the selected language
+  let selectedVoice = null;
+
   const languageVoices = voices.filter(voice => 
     voice.lang.startsWith(LANGUAGES[language].code.split('-')[0])
   );
+  const femaleVoice = languageVoices.find(voice => 
+    voice.name.toLowerCase().includes('female') || 
+    voice.name.toLowerCase().includes('woman') || 
+    (language === 'tamil' && voice.name.toLowerCase().includes('samantha'))
+  );
+  selectedVoice = femaleVoice || languageVoices[0];
 
-  if (languageVoices.length > 0) {
-    // Prefer female voices if available
-    const femaleVoice = languageVoices.find(voice => 
-      voice.name.toLowerCase().includes('female') || 
-      voice.name.toLowerCase().includes('woman')
-    );
-    
-    utterance.voice = femaleVoice || languageVoices[0];
-    
-    // Adjust parameters for better sound
-    utterance.rate = 0.9;
-    utterance.pitch = femaleVoice ? 1.0 : 1.2;
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    utterance.rate = language === 'tamil' ? 0.85 : 0.9;
+    utterance.pitch = language === 'tamil' ? 1.1 : 1.0;
+  } else {
+    console.warn(`No suitable voice found for ${language}, using default.`);
   }
+
+  utterance.onerror = () => {
+    alert(UI_TEXT[language].synthesisError);
+  };
 
   window.speechSynthesis.speak(utterance);
 };
@@ -169,15 +264,11 @@ const AIAgent = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Load voices when component mounts
   useEffect(() => {
     if ('speechSynthesis' in window) {
-      // Some browsers need this to populate voices
       window.speechSynthesis.onvoiceschanged = () => {
         console.log('Voices loaded:', window.speechSynthesis.getVoices());
       };
-      
-      // Force voices to load
       window.speechSynthesis.getVoices();
     }
   }, []);
@@ -198,7 +289,6 @@ const AIAgent = () => {
     if (sender === 'user') {
       setIsProcessing(true);
       try {
-        // Send to your backend API
         const response = await axios.post('http://localhost:10000/api/chat', {
           text,
           language: LANGUAGES[language].backendCode
@@ -206,15 +296,14 @@ const AIAgent = () => {
 
         if (response.data.response) {
           addMessage(response.data.response, 'ai', language);
-          
-          // Auto-speak AI response in selected language
           if (response.data.response) {
             speakText(response.data.response, language);
           }
         }
       } catch (error) {
         console.error('Error:', error);
-        addMessage("Sorry, I couldn't process your request. Please try again.", 'ai', language);
+        const errorMsg = UI_TEXT[language].recognitionError;
+        addMessage(errorMsg, 'ai', language);
       } finally {
         setIsProcessing(false);
       }
@@ -257,6 +346,24 @@ const AIAgent = () => {
 
   return (
     <div className="flex flex-col h-screen max-h-screen bg-gray-50">
+      <style>
+        {`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+          }
+        `}
+      </style>
       {/* Header */}
       <header className="p-4 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between">
         <div className="flex items-center">
@@ -305,24 +412,28 @@ const AIAgent = () => {
           </div>
         </div>
       </header>
-
+  
       {/* Messages */}
-      <div className="flex-1 overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto px-4 py-2">
+      <div className="flex-1 h-full relative">
+        <div className="flex-1 max-h-full overflow-y-auto px-4 py-2 custom-scrollbar">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400">
               <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <div className="w-8 h-8 rounded-full bg-gray-300" />
               </div>
-              <p className="text-center text-lg font-medium mb-1">AI Lawyer Chat</p>
+              <p className="text-center text-lg font-medium mb-1">
+                {UI_TEXT[currentLanguage].chatTitle}
+              </p>
               <p className="text-center text-sm">
-                Ask legal questions in your preferred language using voice or text
+                {UI_TEXT[currentLanguage].chatDescription}
               </p>
             </div>
           ) : (
-            messages.map(message => (
-              <MessageItem key={message.id} message={message} />
-            ))
+            <div className="flex flex-col space-y-2">
+              {messages.map(message => (
+                <MessageItem key={message.id} message={message} />
+              ))}
+            </div>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -339,20 +450,22 @@ const AIAgent = () => {
                   />
                 ))}
               </div>
-              <span>AI is thinking...</span>
+              <span>{UI_TEXT[currentLanguage].aiThinking}</span>
             </div>
           </div>
         )}
       </div>
-
+  
       {/* Voice controls and input */}
       <div className="px-4 py-3 bg-white border-t border-gray-200">
         {voiceState.isRecording && (
           <div className="flex items-center justify-between bg-gray-100 rounded-lg p-4 mb-3">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-700 mb-1">Recording...</p>
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                {UI_TEXT[currentLanguage].recording}
+              </p>
               <p className="text-gray-800">
-                {voiceState.transcript || 'Speak now...'}
+                {voiceState.transcript || UI_TEXT[currentLanguage].speakNow}
               </p>
             </div>
             <button
@@ -364,7 +477,7 @@ const AIAgent = () => {
             </button>
           </div>
         )}
-
+  
         <div className="flex items-center">
           <button
             onClick={voiceState.isRecording ? stopRecording : startRecording}
@@ -387,7 +500,7 @@ const AIAgent = () => {
                   handleSendMessage();
                 }
               }}
-              placeholder="Type your message..."
+              placeholder={UI_TEXT[currentLanguage].typeMessage}
               className="w-full resize-none p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
               rows={1}
               style={{ maxHeight: '120px', minHeight: '46px' }}

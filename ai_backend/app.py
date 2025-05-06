@@ -6,7 +6,7 @@ import os
 import logging
 from datetime import datetime
 import requests
-from langdetect import detect  
+from langdetect import detect, LangDetectException
 
 load_dotenv()
 app = Flask(__name__)
@@ -31,19 +31,18 @@ Rules:
 3. **Do not explain articles, acts, or legal introductions** unless the user asks specifically about them.
 4. Focus only on **legal rules and what a person must do** or follow.
 5. Clarify if the information is **state-specific**, and suggest consulting a lawyer for personalized advice.
-6. Always cite relevant laws (IPC, CrPC, etc.) briefly when needed, without explanation unless asked.
+6. Always cite relevant laws (IPC, CrPC, Motor Vehicles Act, etc.) briefly when needed, without explanation unless asked.
 7. Never give personal legal advice — recommend contacting a lawyer or legal services.
-8. You can analyze the user language and respond in the same language.
-9. If a user asks how to commit a crime (e.g., how to kill someone, how to steal), **do not reject the question**, but respond strictly:
-   - Clearly state the **legal consequences** under Indian law.
-   - Mention relevant sections of IPC (e.g., 302 for murder).
-   - Warn that **attempting or planning such acts is punishable by law**.
-   - Never justify, support, or explain how the act can be done.
-10. A user is asking about the legal consequences of committing murder and whether it's possible to avoid punishment. Provide a legal response based on Indian law, citing relevant sections like IPC 302, CrPC, etc.
-
+8. Respond in the user's language as specified (e.g., Tamil, Kannada, Telugu, Hindi). If the response is generated in English, it will be translated to the user's language.
+9. If a user asks about actions implying illegal activities (e.g., speeding, theft), respond with:
+   - The **legal consequences** under Indian law.
+   - Relevant sections of applicable laws (e.g., Motor Vehicles Act, IPC).
+   - A warning that such actions are punishable.
+   - Advice to follow legal procedures and consult a lawyer.
+10. If a user asks about the legal consequences of an action (e.g., speeding and getting caught), provide a response citing relevant laws (e.g., Motor Vehicles Act, Section 183) and possible penalties.
+11. If a user asks "tell me about law or article or sections," respond to the specific question asked.
 Be accurate, concise, and helpful.
 """
-
 
 # Translation function
 def translate_text(text, target_lang, source_lang='en'):
@@ -66,37 +65,30 @@ def translate_text(text, target_lang, source_lang='en'):
         logger.error(f"Translation error: {e}")
         return text  # Return original text if translation fails
 
-# Function to handle Tanglish language input
-def handle_tanglish(text):
+# Function to detect language
+def detect_language(text):
     try:
-        # Check if the language is detected as Tamil or similar (even if written in English)
         lang = detect(text)
-        if lang == 'ta':  # If the input is detected as Tamil
-            return 'ta'
-        else:
-            return 'en'  # Default to English
-    except Exception as e:
-        logger.error(f"Language detection error: {e}")
-        return 'en'
+        if lang in ['ta', 'kn', 'te', 'hi', 'en']:
+            return lang
+        return 'en'  # Default to English
+    except LangDetectException:
+        return 'en'  # Fallback to English if detection fails
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
     try:
         data = request.json
         user_input = data.get('text', '').strip()
-        user_language = data.get('language', 'en')  # Default to English
-
-        # Detect language if not provided
-        if user_language == 'en':
-            try:
-                detected_lang = detect(user_input)
-                if detected_lang in ['ta', 'kn', 'te', 'hi']:  # Supported Indian languages
-                    user_language = detected_lang
-            except:
-                pass  # Fallback to English if detection fails
+        user_language = data.get('language', 'en')
 
         if not user_input:
             return jsonify({'error': 'Empty input'}), 400
+
+        # Use specified language; fall back to detection only if not provided
+        if user_language not in ['ta', 'kn', 'te', 'hi']:
+            detected_lang = detect_language(user_input)
+            user_language = detected_lang if detected_lang in ['ta', 'kn', 'te', 'hi'] else 'en'
 
         # Try Groq API
         if client:
@@ -112,18 +104,13 @@ def chat():
                 )
                 ai_response = response.choices[0].message.content
 
-                # Translate response if user language is not English
+                # Translate response to user language if not English
                 if user_language != 'en':
-                    try:
-                        ai_response = translate_text(ai_response, user_language)
-                    except Exception as e:
-                        logger.error(f"Translation error: {e}")
-                        # Fallback to English if translation fails
-                        pass
+                    ai_response = translate_text(ai_response, user_language)
 
                 return jsonify({
                     'response': ai_response,
-                    'language': user_language,  # Send back detected language
+                    'language': user_language,
                     'timestamp': datetime.now().isoformat()
                 })
 
@@ -131,10 +118,7 @@ def chat():
                 logger.error(f"Groq API error: {str(e)}")
 
         # Fallback response
-        fallback_response = get_fallback_response(user_input)
-        if user_language != 'en':
-            fallback_response = translate_text(fallback_response, user_language)
-
+        fallback_response = get_fallback_response(user_input, user_language)
         return jsonify({
             'response': fallback_response,
             'language': user_language,
@@ -144,23 +128,64 @@ def chat():
 
     except Exception as e:
         logger.error(f"Server error: {str(e)}")
+        fallback_response = get_fallback_response(language=user_language)
         return jsonify({
-            'response': get_fallback_response(),
+            'response': fallback_response,
+            'language': user_language,
+            'timestamp': datetime.now().isoformat(),
             'is_fallback': True
         }), 500
 
-def get_fallback_response(question=None):
-    base = "I cannot access legal resources right now. For official Indian legal advice:\n\n"
-    resources = [
-        "• National Legal Services Authority: https://nalsa.gov.in",
-        "• State Legal Services Authority",
-        "• Consult a licensed attorney"
-    ]
-    resources_text = '\n'.join(resources)
-    if question:
-        return f"{base}Regarding '{question}', please contact:\n{resources_text}"
-    return f"{base}Please contact:\n{resources_text}"
+def get_fallback_response(question=None, language='en'):
+    fallback_messages = {
+        'en': {
+            'base': "I cannot access legal resources right now. For official Indian legal advice:\n\n",
+            'resources': [
+                "• National Legal Services Authority: https://nalsa.gov.in",
+                "• State Legal Services Authority",
+                "• Consult a licensed attorney"
+            ]
+        },
+        'ta': {
+            'base': "தற்போது சட்ட ஆதாரங்களை அணுக முடியவில்லை. இந்திய சட்ட ஆலோசனைக்கு:\n\n",
+            'resources': [
+                "• தேசிய சட்ட சேவைகள் ஆணையம்: https://nalsa.gov.in",
+                "• மாநில சட்ட சேவைகள் ஆணையம்",
+                "• உரிமம் பெற்ற வழக்கறிஞரை அணுகவும்"
+            ]
+        },
+        'kn': {
+            'base': "ಪ್ರಸ್ತುತ ಕಾನೂನು ಸಂಪನ್ಮೂಲಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಅಧಿಕೃತ ಭಾರತೀಯ ಕಾನೂನು ಸಲಹೆಗಾಗಿ:\n\n",
+            'resources': [
+                "• ರಾಷ್ಟ್ರೀಯ ಕಾನೂನು ಸೇವೆಗಳ ಪ್ರಾಧಿಕಾರ: https://nalsa.gov.in",
+                "• ರಾಜ್ಯ ಕಾನೂನು ಸೇವೆಗಳ ಪ್ರಾಧಿಕಾರ",
+                "• ಪರವಾನಗಿ ಪಡೆದ ವಕೀಲರನ್ನು ಸಂಪರ್ಕಿಸಿ"
+            ]
+        },
+        'te': {
+            'base': "ప్రస్తుతం చట్టపరమైన వనరులను యాక్సెస్ చేయలేకపోతున్నాము. అధికారిక భారతీయ చట్ట సలహా కోసం:\n\n",
+            'resources': [
+                "• జాతీయ చట్ట సేవల అథారిటీ: https://nalsa.gov.in",
+                "• రాష్ట్ర చట్ట సేవల అథారిటీ",
+                "• లైసెన్స్ పొందిన న్యాయవాదిని సంప్రదించండి"
+            ]
+        },
+        'hi': {
+            'base': "वर्तमान में कानूनी संसाधनों तक पहुंच नहीं हो सकती। आधिकारिक भारतीय कानूनी सलाह के लिए:\n\n",
+            'resources': [
+                "• राष्ट्रीय कानूनी सेवा प्राधिकरण: https://nalsa.gov.in",
+                "• राज्य कानूनी सेवा प्राधिकरण",
+                "• लाइसेंस प्राप्त वकील से संपर्क करें"
+            ]
+        }
+    }
 
+    messages = fallback_messages.get(language, fallback_messages['en'])
+    resources_text = '\n'.join(messages['resources'])
+    if question:
+        question_text = translate_text(question, language) if language != 'en' else question
+        return f"{messages['base']}Regarding '{question_text}', please contact:\n{resources_text}"
+    return f"{messages['base']}Please contact:\n{resources_text}"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=True)
