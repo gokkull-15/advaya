@@ -4,7 +4,130 @@ import { FaVolumeUp, FaCar, FaExclamationTriangle, FaUserSlash, FaTrash, FaHome,
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import crypto from 'crypto-js';
+import { ethers } from 'ethers';
 import BG from "../assets/image.png";
+
+// ABI of the deployed ComplaintRegistry contract
+const CONTRACT_ABI = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "complaintId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "complainant",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "ComplaintRegistered",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_ipfsHash",
+				"type": "string"
+			}
+		],
+		"name": "registerComplaint",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "complaintCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "complaints",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "complainant",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_complaintId",
+				"type": "uint256"
+			}
+		],
+		"name": "getComplaint",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "complainant",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+// Deployed contract address on Base Sepolia
+const CONTRACT_ADDRESS = "0x5644104d12dBDB85b8e20dDCC723E11A6e261916"; // Replace with the address from Remix
 
 function ComplaintForm() {
   const navigate = useNavigate();
@@ -23,6 +146,7 @@ function ComplaintForm() {
   const [evidenceIpfsHashes, setEvidenceIpfsHashes] = useState([]);
   const [showIpfsPopup, setShowIpfsPopup] = useState(false);
   const [secretKey, setSecretKey] = useState('');
+  const [transactionHash, setTransactionHash] = useState(''); // Track blockchain transaction hash
   const fileInputRef = useRef(null);
 
   // Pinata configuration
@@ -54,6 +178,54 @@ function ComplaintForm() {
     { id: 'fire', icon: <FaFire />, label: 'Fire Emergency' },
     { id: 'other', icon: <FaFileAlt />, label: 'Other' },
   ];
+
+// Function to store IPFS hash on Base Sepolia
+const storeIpfsHashOnChain = async (encryptedHash) => {
+  try {
+    if (!window.ethereum) {
+      throw new Error("MetaMask is not installed");
+    }
+
+    // Request account access
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+
+    // Ensure the user is on Base Sepolia (chainId: 84532)
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0x14a34" }], // 84532 in hex
+    });
+
+    // Initialize ethers provider and signer
+    const provider = new ethers.providers.Web3Provider(window.ethereum); // Changed from BrowserProvider
+    const signer = provider.getSigner(); // Simplified signer retrieval
+
+    // Initialize contract instance
+    const complaintRegistry = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+    // Call the registerComplaint function
+    const tx = await complaintRegistry.registerComplaint(encryptedHash);
+    console.log("Transaction sent:", tx.hash);
+
+    // Wait for the transaction to be mined
+    const receipt = await tx.wait();
+    console.log("Transaction confirmed:", receipt);
+
+    setTransactionHash(tx.hash);
+    toast.success("IPFS hash stored on Base Sepolia!", {
+      duration: 4000,
+      style: {
+        background: '#CBFF96',
+        color: '#1A1A1A',
+      },
+    });
+
+    return receipt;
+  } catch (error) {
+    console.error("Error storing IPFS hash on chain:", error);
+    toast.error(`Failed to store IPFS hash: ${error.message}`);
+    throw error;
+  }
+};
 
   // Generate a random secret key for officer access
   const generateSecretKey = () => {
@@ -180,17 +352,23 @@ function ComplaintForm() {
     }
   };
 
+  // Modified handleSubmit to include blockchain storage
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
     try {
+      // Upload files to IPFS
       const uploadedFiles = await uploadFilesToIPFS();
       setEvidenceIpfsHashes(uploadedFiles);
       
+      // Upload complaint data to IPFS
       const { originalHash, encryptedHash } = await uploadComplaintToIPFS(uploadedFiles);
       setComplaintIpfsHash(encryptedHash);
       
-      toast.success("Complaint submitted successfully!", {
+      // Store the encrypted IPFS hash on Base Sepolia
+      await storeIpfsHashOnChain(encryptedHash);
+      
+      toast.success("Complaint submitted and stored on blockchain!", {
         duration: 4000,
         style: {
           background: '#CBFF96',
@@ -227,6 +405,7 @@ function ComplaintForm() {
     navigate('/');
   };
 
+  // Modified IpfsPopup to display transaction hash
   const IpfsPopup = () => {
     if (!showIpfsPopup) return null;
     
@@ -236,7 +415,7 @@ function ComplaintForm() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center">
               <FaFileAlt className="w-6 h-6 mr-2 text-blue-600" />
-              Complaint Stored on IPFS
+              Complaint Stored on IPFS & Blockchain
             </h2>
             <button 
               onClick={closePopupAndNavigate}
@@ -267,6 +446,22 @@ function ComplaintForm() {
               <p className="text-xs text-gray-500 mt-1">Click to view your complete complaint details (requires secret key)</p>
             </div>
             
+            {transactionHash && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Blockchain Transaction:</h3>
+                <a
+                  href={`https://sepolia.basescan.org/tx/${transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors"
+                >
+                  <span className="text-sm font-mono break-all">{transactionHash}</span>
+                  <FaExternalLinkAlt className="text-blue-600 ml-2" />
+                </a>
+                <p className="text-xs text-gray-500 mt-1">View transaction on Base Sepolia Explorer</p>
+              </div>
+            )}
+            
             {evidenceIpfsHashes.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-600 mb-2">Evidence Files:</h3>
@@ -289,7 +484,7 @@ function ComplaintForm() {
             
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r">
               <p className="text-sm text-gray-700">
-                Please save these IPFS hashes and the secret key for your records. They provide permanent access to your complaint data.
+                Please save these IPFS hashes, the secret key, and the transaction hash for your records. They provide permanent access to your complaint data.
               </p>
             </div>
           </div>
