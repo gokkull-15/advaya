@@ -18,6 +18,7 @@ function App() {
         <Route path="/file-complaint" element={<ComplaintForm />} />
         <Route path="/track-complaint" element={<TaskDetails />} />
         <Route path="/officer" element={<Dashboard />} />
+        <Route path="/gen" element={<Gen />} />
         <Route path="/ai-agent" element={<AIAgent />} />
       </Routes>
     </Router>
