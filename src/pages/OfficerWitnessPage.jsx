@@ -1,21 +1,19 @@
 import React, { useState } from "react";
-import { ethers } from "ethers";
-import * as openpgp from "openpgp";
+import { ethers, Wallet } from "ethers";
 import WitnessContractABI from "./abis/WitnessComplaints.json";
 
 const contractAddress = "0x28964BFC5526aDA90D3503B3bCd2c35b93fB4F78"; // Update with your deployed address
 
 const OfficerWitnessViewer = ({ complaintId }) => {
-  const [privateKeyArmored, setPrivateKeyArmored] = useState("");
   const [passphrase, setPassphrase] = useState("");
   const [witnessMessage, setWitnessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const getEncryptedIpfsHash = async () => {
     if (!window.ethereum) throw new Error("Please install MetaMask");
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const contract = new ethers.Contract(contractAddress, WitnessContractABI, provider);
-    const witnesses = await contract.compliantWitness(complaintId, 0); // First witness
+    const witnesses = await contract.complaintWitness(complaintId, 0);
     return witnesses.encryptedIpfsHash;
   };
 
@@ -31,15 +29,8 @@ const OfficerWitnessViewer = ({ complaintId }) => {
 
   const decryptMessage = async (encryptedText) => {
     try {
-      const privateKey = await openpgp.decryptKey({
-        privateKey: await openpgp.readPrivateKey({ armoredKey: privateKeyArmored }),
-        passphrase,
-      });
-      const message = await openpgp.readMessage({ armoredMessage: encryptedText });
-      const { data: decrypted } = await openpgp.decrypt({
-        message,
-        decryptionKeys: privateKey,
-      });
+      console.log("Wallet.decrypt:", Wallet.decrypt); // Debug
+      const decrypted = await Wallet.decrypt(encryptedText, passphrase);
       return decrypted;
     } catch (err) {
       throw new Error("Decryption failed: " + err.message);
@@ -54,8 +45,8 @@ const OfficerWitnessViewer = ({ complaintId }) => {
       const decrypted = await decryptMessage(encryptedData);
       setWitnessMessage(decrypted);
     } catch (err) {
-      console.error("Error while decrypting:", err);
-      alert("  decrypted" );
+      console.error("Decryption error:", err);
+      alert("Failed to decrypt: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -64,24 +55,17 @@ const OfficerWitnessViewer = ({ complaintId }) => {
   return (
     <div className="p-4 border rounded shadow-md bg-white max-w-md">
       <h2 className="text-xl font-bold mb-4">Witness Info Viewer (Officer Only)</h2>
-      <textarea
-        className="w-full p-2 mb-2 border"
-        rows={6}
-        placeholder="Paste your armored private key here..."
-        value={privateKeyArmored}
-        onChange={(e) => setPrivateKeyArmored(e.target.value)}
-      />
       <input
         type="password"
         className="w-full p-2 mb-2 border"
-        placeholder="Private key passphrase"
+        placeholder="Enter passphrase (witness123 for testing)"
         value={passphrase}
         onChange={(e) => setPassphrase(e.target.value)}
       />
       <button
         className="bg-blue-600 text-white px-4 py-2 rounded"
         onClick={handleViewWitness}
-        disabled={loading || !privateKeyArmored || !passphrase}
+        disabled={loading || !passphrase}
       >
         {loading ? "Decrypting..." : "View Witness Info"}
       </button>

@@ -1,49 +1,48 @@
 import React, { useState } from "react";
-import * as openpgp from "openpgp";
+import { ethers, Wallet } from "ethers";
 import { NFTStorage, File } from "nft.storage";
-import { ethers } from "ethers";
 import WitnessContractABI from "./abis/WitnessComplaints.json";
 
-const NFT_STORAGE_TOKEN = "4924e991.a6432b63948246818f9f3719d7ed7b3f";
+const NFT_STORAGE_TOKEN = import.meta.env.VITE_NFT_STORAGE_TOKEN;
 const contractAddress = "0x28964BFC5526aDA90D3503B3bCd2c35b93fB4F78"; // Update with your deployed address
 
-const WitnessForm = ({ complaintId, officerPublicKey }) => {
+const WitnessForm = ({ complaintId, officerAddress }) => {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
 
   const encryptMessage = async (text) => {
-    if (!officerPublicKey || !officerPublicKey.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
-      throw new Error("Invalid or missing PGP public key");
+    console.log("ethers version:", ethers.version); // Should be 5.7.2
+    console.log("Wallet.encrypt:", Wallet.encrypt); // Should be a function
+    if (!officerAddress || !ethers.utils.isAddress(officerAddress)) {
+      throw new Error("Invalid or missing officer address");
     }
     try {
-      const publicKey = await openpgp.readKey({ armoredKey: officerPublicKey });
-      const encrypted = await openpgp.encrypt({
-        message: await openpgp.createMessage({ text }),
-        encryptionKeys: publicKey,
-      });
-      return encrypted;
+      const passphrase = "witness123"; // For testing; derive securely in production
+      const encrypted = await Wallet.encrypt(passphrase, text);
+      return encrypted; // JSON string
     } catch (err) {
       throw new Error("Encryption failed: " + err.message);
     }
   };
 
   const uploadToNFTStorage = async (encryptedText) => {
-    if (!NFT_STORAGE_TOKEN) throw new Error("NFT_STORAGE_TOKEN is missing");
+    if (!NFT_STORAGE_TOKEN) throw new Error("NFT_STORAGE_TOKEN is missing. Check .env");
     try {
+      console.log("NFT_STORAGE_TOKEN:", NFT_STORAGE_TOKEN); // Debug
       const client = new NFTStorage({ token: NFT_STORAGE_TOKEN });
       const file = new File([encryptedText], "witness.txt", { type: "text/plain" });
       const cid = await client.storeBlob(file);
       return cid;
     } catch (err) {
-      throw new Error("IPFS upload sucessful");
+      throw new Error("IPFS upload failed: " + err.message);
     }
   };
 
   const sendToContract = async (cid) => {
     if (!window.ethereum) throw new Error("Please install MetaMask");
     await window.ethereum.request({ method: "eth_requestAccounts" });
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
     const contract = new ethers.Contract(contractAddress, WitnessContractABI, signer);
     const tx = await contract.submitWitnessInfo(complaintId, cid);
     await tx.wait();
@@ -60,8 +59,8 @@ const WitnessForm = ({ complaintId, officerPublicKey }) => {
       setStatus("✅ Submitted successfully!");
       setMessage("");
     } catch (err) {
-      console.error(err);
-      setStatus("✅ Submitted successfully!");
+      console.error("Submission error:", err);
+      setStatus("❌ Error: " + err.message);
     }
   };
 
@@ -78,7 +77,7 @@ const WitnessForm = ({ complaintId, officerPublicKey }) => {
       <button
         onClick={handleSubmit}
         className="bg-blue-600 text-white px-4 py-2 rounded"
-        disabled={!message.trim() || !officerPublicKey}
+        disabled={!message.trim() || !officerAddress}
       >
         Submit
       </button>
