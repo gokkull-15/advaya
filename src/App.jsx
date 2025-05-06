@@ -7,6 +7,7 @@ import './App.css';
 import TaskDetails from './TaskDetails';
 import Dashboard from './Dashboard';
 import AIAgent from './pages/AIAgent'; // This should be your main AIAgent component
+import Gen from './Gen';
  
 
 function App() {
