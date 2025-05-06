@@ -23,3 +23,24 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+@keyframes reveal-char {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal span {
+  display: inline-block;
+  opacity: 0;
+  animation: reveal-char 0.4s ease forwards;
+}
+
+.reveal span:nth-child(n) {
+  animation-delay: calc(0.05s * var(--i));
+}

@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaVolumeUp, FaCar, FaExclamationTriangle, FaUserSlash, FaTrash, FaHome, FaUserSecret, FaBuilding, FaFire, FaFileAlt, FaCheck, FaUpload, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
-import toast from 'react-hot-toast';
+import { FaVolumeUp, FaCar, FaExclamationTriangle, FaUserSlash, FaTrash, FaHome, FaUserSecret, FaBuilding, FaFire, FaFileAlt, FaCheck, FaUpload, FaTimes, FaExternalLinkAlt, FaPhone, FaSearch } from 'react-icons/fa';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import '../styles/ComplaintForm.css';
+import BG from "../assets/image.png";
 
 function ComplaintForm() {
   const navigate = useNavigate();
@@ -75,7 +75,6 @@ function ComplaintForm() {
     setSelectedFiles(files);
   };
 
-  // Function to upload files to IPFS via Pinata
   const uploadFilesToIPFS = async () => {
     if (selectedFiles.length === 0) {
       return [];
@@ -110,7 +109,6 @@ function ComplaintForm() {
     return uploadedFiles;
   };
 
-  // Function to upload complaint data to IPFS via Pinata
   const uploadComplaintToIPFS = async (fileHashes) => {
     const complaintData = {
       complaintType: getSelectedComplaintType(),
@@ -149,15 +147,12 @@ function ComplaintForm() {
     setIsSubmitting(true);
     
     try {
-      // First upload any evidence files to IPFS
       const uploadedFiles = await uploadFilesToIPFS();
       setEvidenceIpfsHashes(uploadedFiles);
       
-      // Then upload the entire complaint data to IPFS
       const complaintHash = await uploadComplaintToIPFS(uploadedFiles);
       setComplaintIpfsHash(complaintHash);
       
-      // Show success message
       toast.success("Complaint submitted successfully!", {
         duration: 4000,
         style: {
@@ -166,7 +161,6 @@ function ComplaintForm() {
         },
       });
       
-      // Show the IPFS popup with hash information
       setShowIpfsPopup(true);
       
     } catch (error) {
@@ -182,67 +176,79 @@ function ComplaintForm() {
     return selected ? selected.label : '';
   };
 
-  // Function to handle clicking on an IPFS hash link
   const openIPFSLink = (ipfsHash) => {
     window.open(`https://ipfs.io/ipfs/${ipfsHash}`, '_blank');
   };
 
-  // Function to close the popup and navigate home
   const closePopupAndNavigate = () => {
     setShowIpfsPopup(false);
     navigate('/');
   };
 
-  // IPFS Popup Component
   const IpfsPopup = () => {
     if (!showIpfsPopup) return null;
     
     return (
-      <div className="ipfs-popup-overlay">
-        <div className="ipfs-popup-content">
-          <div className="ipfs-popup-header">
-            <h2>Complaint Successfully Stored on IPFS</h2>
-            <button className="close-button" onClick={closePopupAndNavigate}>
-              <FaTimes />
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+        <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+              <FaFileAlt className="w-6 h-6 mr-2 text-blue-600" />
+              Complaint Stored on IPFS
+            </h2>
+            <button 
+              onClick={closePopupAndNavigate}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <FaTimes className="w-5 h-5" />
             </button>
           </div>
           
-          <div className="ipfs-popup-body">
-            <div className="ipfs-section">
-              <h3>FIR (Complete Complaint):</h3>
-              <div className="ipfs-hash-container" onClick={() => openIPFSLink(complaintIpfsHash)}>
-                <span className="ipfs-hash">{complaintIpfsHash}</span>
-                <FaExternalLinkAlt className="external-link-icon" />
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-600 mb-2">FIR (Complete Complaint):</h3>
+              <div 
+                className="p-3 bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors"
+                onClick={() => openIPFSLink(complaintIpfsHash)}
+              >
+                <span className="text-sm font-mono break-all">{complaintIpfsHash}</span>
+                <FaExternalLinkAlt className="text-blue-600 ml-2" />
               </div>
-              <p className="ipfs-description">Click on the hash to view your complete complaint details</p>
+              <p className="text-xs text-gray-500 mt-1">Click to view your complete complaint details</p>
             </div>
             
             {evidenceIpfsHashes.length > 0 && (
-              <div className="ipfs-section">
-                <h3>Evidence Files:</h3>
-                {evidenceIpfsHashes.map((file, index) => (
-                  <div key={index} className="evidence-item">
-                    <span className="evidence-name">{file.name}</span>
-                    <div 
-                      className="ipfs-hash-container" 
-                      onClick={() => openIPFSLink(file.ipfsHash)}
-                    >
-                      <span className="ipfs-hash">{file.ipfsHash}</span>
-                      <FaExternalLinkAlt className="external-link-icon" />
+              <div>
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Evidence Files:</h3>
+                <div className="space-y-2">
+                  {evidenceIpfsHashes.map((file, index) => (
+                    <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                      <span className="text-sm font-medium block mb-1">{file.name}</span>
+                      <div 
+                        className="p-2 bg-gray-100 rounded flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors"
+                        onClick={() => openIPFSLink(file.ipfsHash)}
+                      >
+                        <span className="text-xs font-mono break-all">{file.ipfsHash}</span>
+                        <FaExternalLinkAlt className="text-blue-600 ml-2" />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
             
-            <div className="ipfs-notes">
-              <p>Please save these IPFS hashes for your records. 
-              They provide permanent access to your complaint data.</p>
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r">
+              <p className="text-sm text-gray-700">
+                Please save these IPFS hashes for your records. They provide permanent access to your complaint data.
+              </p>
             </div>
           </div>
           
-          <div className="ipfs-popup-footer">
-            <button className="primary-button" onClick={closePopupAndNavigate}>
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={closePopupAndNavigate}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-all duration-300"
+            >
               Return to Home
             </button>
           </div>
@@ -255,38 +261,43 @@ function ComplaintForm() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="form-section">
-            <h2>Step 1: Complaint Type</h2>
-            <p>Select the type of complaint you want to register</p>
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 1: Complaint Type</h2>
+            <p className="text-gray-200 mb-6">Select the type of complaint you want to register</p>
 
-            <div className="complaint-types-grid">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
               {complaintTypes.map((type) => (
-                <div
+                <button
                   key={type.id}
-                  className={`complaint-type-card ${selectedType === type.id ? 'selected' : ''}`}
+                  className={`p-4 rounded-xl transition-all duration-300 flex flex-col items-center justify-center ${selectedType === type.id ? 'bg-purple-600 text-white' : 'bg-white bg-opacity-20 text-gray-200 hover:bg-opacity-30'}`}
                   onClick={() => setSelectedType(type.id)}
                 >
-                  <div className="complaint-type-icon">{type.icon}</div>
-                  <div className="complaint-type-label">{type.label}</div>
-                </div>
+                  <span className="text-xl mb-2">{type.icon}</span>
+                  <span className="text-sm font-medium cinzel-uniquifier">{type.label}</span>
+                </button>
               ))}
             </div>
 
-            <div className="description-section">
-              <h3>Brief Description</h3>
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Brief Description</h3>
               <textarea
+                className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                 placeholder="Please describe the issue in detail"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                rows={5}
               />
             </div>
 
-            <div className="form-buttons">
-              <button className="cancel-button" onClick={() => navigate('/')}>
+            <div className="flex justify-between">
+              <button 
+                onClick={() => navigate('/')}
+                className="px-6 py-2 bg-gray-600 vt323-regular text-2xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+              >
                 Cancel
               </button>
               <button 
-                className="next-button"
+                className={`px-6 py-2 rounded-full font-semibold vt323-regular text-2xl transition-all duration-300 ${!selectedType || !description.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 disabled={!selectedType || !description.trim()}
                 onClick={handleNext}
               >
@@ -297,13 +308,13 @@ function ComplaintForm() {
         );
       case 2:
         return (
-          <div className="form-section">
-            <h2>Step 2: Location Details</h2>
-            <p>Provide the location where the incident occurred</p>
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 2: Location Details</h2>
+            <p className="text-gray-200 mb-6">Provide the location where the incident occurred</p>
 
-            <div className="location-section">
-              <h3>Address</h3>
-              <div className="location-input-container">
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Address</h3>
+              <div className="relative">
                 <input
                   type="text"
                   value={location}
@@ -312,11 +323,12 @@ function ComplaintForm() {
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   placeholder="Enter the location"
-                  className="location-input"
+                  className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                 />
                 {showSuggestions && location && (
-                  <div className="location-suggestions">
+                  <div className="absolute z-10 mt-1 w-full bg-gray-800 rounded-lg shadow-lg max-h-60 overflow-auto">
                     {suggestions
                       .filter(suggestion => 
                         suggestion.toLowerCase().includes(location.toLowerCase())
@@ -324,7 +336,7 @@ function ComplaintForm() {
                       .map((suggestion, index) => (
                         <div
                           key={index}
-                          className="suggestion-item"
+                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-gray-200"
                           onClick={() => handleLocationSelect(suggestion)}
                         >
                           {suggestion}
@@ -335,12 +347,15 @@ function ComplaintForm() {
               </div>
             </div>
 
-            <div className="form-buttons">
-              <button className="back-button" onClick={handleBack}>
+            <div className="flex justify-between">
+              <button 
+                onClick={handleBack}
+                className="px-6 py-2 bg-gray-600 vt323-regular text-2xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+              >
                 Back
               </button>
               <button 
-                className="next-button"
+                className={`px-6 py-2 vt323-regular text-2xl rounded-full font-semibold transition-all duration-300 ${!location.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 disabled={!location.trim()}
                 onClick={handleNext}
               >
@@ -351,17 +366,18 @@ function ComplaintForm() {
         );
       case 3:
         return (
-          <div className="form-section">
-            <h2>Step 3: Evidence Submission</h2>
-            <p>Upload photos, videos, or audio recordings related to your complaint</p>
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 3: Evidence Submission</h2>
+            <p className="text-gray-200 mb-6">Upload photos, videos, or audio recordings related to your complaint</p>
 
-            <div className="evidence-section">
+            <div className="mb-8">
               <div 
-                className="upload-area"
+                className="border-2 border-dashed border-gray-400 rounded-xl p-8 text-center cursor-pointer hover:bg-white hover:bg-opacity-10 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <FaUpload className="upload-icon" />
-                <p>Click to upload files</p>
+                <FaUpload className="mx-auto text-3xl text-gray-300 mb-3" />
+                <p className="text-gray-300">Click to upload files</p>
+                <p className="text-sm text-gray-400 mt-1">Supports images, videos, and audio files</p>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -372,33 +388,43 @@ function ComplaintForm() {
               </div>
 
               {selectedFiles.length > 0 && (
-                <div className="selected-files">
-                  <h4>Selected Files:</h4>
-                  <ul>
+                <div className="mt-4 bg-white bg-opacity-10 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-white mb-2">Selected Files:</h4>
+                  <ul className="space-y-2">
                     {selectedFiles.map((file, index) => (
-                      <li key={index}>{file.name}</li>
+                      <li key={index} className="text-gray-200 flex items-center">
+                        <span className="truncate flex-1">{file.name}</span>
+                        <span className="text-xs bg-gray-700 px-2 py-1 rounded ml-2">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </span>
+                      </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              <div className="evidence-description">
-                <h3>Evidence Description</h3>
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Evidence Description</h3>
                 <textarea
+                  className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                   placeholder="Add any additional information about the evidence..."
                   value={evidenceDescription}
                   onChange={(e) => setEvidenceDescription(e.target.value)}
+                  rows={3}
                 />
               </div>
             </div>
 
-            <div className="form-buttons">
-              <button className="back-button" onClick={handleBack}>
+            <div className="flex justify-between">
+              <button 
+                onClick={handleBack}
+                className="px-6 py-2 vt323-regular text-2xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+              >
                 Back
               </button>
               <button 
-                className="next-button"
                 onClick={handleNext}
+                className="px-6 py-2 vt323-regular text-2xl bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Next
               </button>
@@ -407,13 +433,13 @@ function ComplaintForm() {
         );
       case 4:
         return (
-          <div className="form-section">
-            <h2>Step 4: Contact Information</h2>
-            <p>Provide your contact details so we can update you on your complaint</p>
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 4: Contact Information</h2>
+            <p className="text-gray-200 mb-6">Provide your contact details so we can update you on your complaint</p>
 
-            <div className="contact-section">
-              <h3>Email Address</h3>
-              <div className="email-input-container">
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Email Address</h3>
+              <div className="relative">
                 <input
                   type="email"
                   value={email}
@@ -422,11 +448,12 @@ function ComplaintForm() {
                     setShowEmailSuggestions(true);
                   }}
                   onFocus={() => setShowEmailSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowEmailSuggestions(false), 200)}
                   placeholder="Enter your email address"
-                  className="email-input"
+                  className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                 />
                 {showEmailSuggestions && email && (
-                  <div className="email-suggestions">
+                  <div className="absolute z-10 mt-1 w-full bg-gray-800 rounded-lg shadow-lg max-h-60 overflow-auto">
                     {emailSuggestions
                       .filter(suggestion => 
                         suggestion.toLowerCase().includes(email.toLowerCase())
@@ -434,7 +461,7 @@ function ComplaintForm() {
                       .map((suggestion, index) => (
                         <div
                           key={index}
-                          className="suggestion-item"
+                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-gray-200"
                           onClick={() => handleEmailSelect(suggestion)}
                         >
                           {suggestion}
@@ -445,12 +472,15 @@ function ComplaintForm() {
               </div>
             </div>
 
-            <div className="form-buttons">
-              <button className="back-button" onClick={handleBack}>
+            <div className="flex justify-between">
+              <button 
+                onClick={handleBack}
+                className="px-6 py-2 vt323-regular text-2xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+              >
                 Back
               </button>
               <button 
-                className="next-button"
+                className={`px-6 py-2 vt323-regular text-2xl rounded-full font-semibold transition-all duration-300 ${!email.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 disabled={!email.trim()}
                 onClick={handleNext}
               >
@@ -461,56 +491,67 @@ function ComplaintForm() {
         );
       case 5:
         return (
-          <div className="form-section">
-            <h2>Step 5: Review & Submit</h2>
-            <p>Please review your complaint details before submitting</p>
+          <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 5: Review & Submit</h2>
+            <p className="text-gray-200 mb-6">Please review your complaint details before submitting</p>
 
-            <div className="review-section">
-              <div className="review-item">
-                <h3>Complaint Type</h3>
-                <p className="review-value">{getSelectedComplaintType()}</p>
-                <p className="review-description">{description}</p>
+            <div className="mb-8 space-y-6">
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Complaint Type</h3>
+                <p className="text-gray-200 font-medium">{getSelectedComplaintType()}</p>
+                <p className="text-gray-300 mt-2">{description}</p>
               </div>
 
-              <div className="review-item">
-                <h3>Location</h3>
-                <p className="review-value">{location}</p>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Location</h3>
+                <p className="text-gray-200">{location}</p>
               </div>
 
-              <div className="review-item">
-                <h3>Evidence</h3>
-                <p className="review-value">
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Evidence</h3>
+                <p className="text-gray-200 font-medium">
                   {selectedFiles.length > 0 
-                    ? `${selectedFiles.length} file(s) selected for upload` 
+                    ? `${selectedFiles.length} file(s) selected` 
                     : 'No files uploaded'}
                 </p>
-                <p className="review-description">
-                  {evidenceDescription || 'No additional description provided'}
-                </p>
+                {evidenceDescription && (
+                  <p className="text-gray-300 mt-2">{evidenceDescription}</p>
+                )}
               </div>
 
-              <div className="review-item">
-                <h3>Contact Information</h3>
-                <p className="review-value">{email}</p>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Contact Information</h3>
+                <p className="text-gray-200">{email}</p>
               </div>
 
-              <div className="ipfs-info">
-                <p className="ipfs-notice">
+              <div className="bg-yellow-500 bg-opacity-20 rounded-xl p-4 border-l-4 border-yellow-400">
+                <p className="text-yellow-100">
                   Your complaint data will be stored securely on IPFS (InterPlanetary File System).
                 </p>
               </div>
             </div>
 
-            <div className="form-buttons">
-              <button className="back-button" onClick={handleBack}>
+            <div className="flex justify-between">
+              <button 
+                onClick={handleBack}
+                className="px-6 py-2 vt323-regular text-2xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+              >
                 Back
               </button>
               <button 
-                className={`submit-button ${isSubmitting ? 'submitting' : ''}`}
+                className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 flex items-center ${isSubmitting ? 'bg-purple-600' : 'bg-green-600 hover:bg-green-700'} text-white`}
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Submitting to IPFS...' : 'Submit Complaint'}
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="vt323-regular text-2xl opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : <span className='vt323-regular text-2xl'>Submit Complaint</span>}
               </button>
             </div>
           </div>
@@ -521,184 +562,65 @@ function ComplaintForm() {
   };
 
   return (
-    <div className="complaint-form-container">
-      <h1>Register New Complaint</h1>
-      <p className="subtitle">Please provide the details of your complaint. All information will be stored securely on IPFS.</p>
+    <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: `url(${BG})` }}>
+      <div className="bg-black bg-opacity-60 min-h-screen">
+        <header className="flex justify-between items-center p-6 bg-gradient-to-r from-purple-900 to-indigo-900 shadow-lg">
+          <div className="text-3xl font-bold text-white font-['Pacifico']">TN-KUN</div>
+          <div className="flex space-x-4">
+            <button 
+              onClick={() => navigate('/')}
+              className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-['Roboto'] text-sm font-semibold transition-all duration-300 shadow-md flex items-center"
+            >
+              <FaHome className="w-5 h-5 mr-2" />
+              Home
+            </button>
+            <button 
+              onClick={() => navigate('/track-complaint')}
+              className="px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-['Roboto'] text-sm font-semibold transition-all duration-300 shadow-md flex items-center"
+            >
+              <FaSearch className="w-5 h-5 mr-2" />
+              Track Complaint
+            </button>
+          </div>
+        </header>
 
-      <div className="progress-steps">
-        <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-          <div className="step-number">
-            {currentStep > 1 ? <FaCheck className="check-icon" /> : '1'}
+        <main className="max-w-6xl mx-auto px-6 py-1">
+          <div className="text-center mb-6">
+            <h1 className="text-5xl font-bold text-white mb-4 aclonica-regular">Register New Complaint</h1>
+            <p className="text-xl text-gray-200 max-w-2xl mx-auto share-tech-mono-regular">
+              Please provide the details of your complaint. All information will be stored securely.
+            </p>
           </div>
-          <div className="step-label">Type</div>
-        </div>
-        <div className={`step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}>
-          <div className="step-number">
-            {currentStep > 2 ? <FaCheck className="check-icon" /> : '2'}
+
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center">
+              {[1, 2, 3, 4, 5].map((step) => (
+                <React.Fragment key={step}>
+                  <div className={`flex flex-col items-center ${currentStep >= step ? 'text-white' : 'text-gray-400'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= step ? 'bg-purple-600' : 'bg-gray-700'} ${currentStep === step ? 'ring-2 ring-purple-400' : ''}`}>
+                      {currentStep > step ? <FaCheck className="text-white" /> : step}
+                    </div>
+                    <span className="text-xs mt-1">
+                      {step === 1 && 'Type'}
+                      {step === 2 && 'Location'}
+                      {step === 3 && 'Evidence'}
+                      {step === 4 && 'Contact'}
+                      {step === 5 && 'Review'}
+                    </span>
+                  </div>
+                  {step < 5 && (
+                    <div className={`w-16 h-1 mx-2 ${currentStep > step ? 'bg-purple-600' : 'bg-gray-700'}`}></div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-          <div className="step-label">Location</div>
-        </div>
-        <div className={`step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'completed' : ''}`}>
-          <div className="step-number">
-            {currentStep > 3 ? <FaCheck className="check-icon" /> : '3'}
-          </div>
-          <div className="step-label">Evidence</div>
-        </div>
-        <div className={`step ${currentStep >= 4 ? 'active' : ''} ${currentStep > 4 ? 'completed' : ''}`}>
-          <div className="step-number">
-            {currentStep > 4 ? <FaCheck className="check-icon" /> : '4'}
-          </div>
-          <div className="step-label">Contact</div>
-        </div>
-        <div className={`step ${currentStep >= 5 ? 'active' : ''}`}>
-          <div className="step-number">5</div>
-          <div className="step-label">Review</div>
-        </div>
+
+          {renderStep()}
+          
+          <IpfsPopup />
+        </main>
       </div>
-
-      {renderStep()}
-      
-      {/* IPFS Popup Dialog */}
-      <IpfsPopup />
-      
-      {/* Add CSS for the popup */}
-      <style jsx>{`
-        .ipfs-popup-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.7);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
-        
-        .ipfs-popup-content {
-          background-color: white;
-          border-radius: 8px;
-          width: 90%;
-          max-width: 600px;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .ipfs-popup-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 20px;
-          border-bottom: 1px solid #eaeaea;
-        }
-        
-        .ipfs-popup-header h2 {
-          margin: 0;
-          font-size: 1.5rem;
-          color: #333;
-        }
-        
-        .close-button {
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 1.2rem;
-          color: #666;
-        }
-        
-        .ipfs-popup-body {
-          padding: 20px;
-        }
-        
-        .ipfs-section {
-          margin-bottom: 24px;
-        }
-        
-        .ipfs-section h3 {
-          margin-top: 0;
-          margin-bottom: 12px;
-          color: #333;
-        }
-        
-        .ipfs-hash-container {
-          display: flex;
-          align-items: center;
-          background-color: #f7f7f7;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          padding: 10px 12px;
-          cursor: pointer;
-          transition: background-color 0.2s;
-          margin-bottom: 8px;
-        }
-        
-        .ipfs-hash-container:hover {
-          background-color: #eaf7ff;
-        }
-        
-        .ipfs-hash {
-          font-family: monospace;
-          flex-grow: 1;
-          word-break: break-all;
-        }
-        
-        .external-link-icon {
-          margin-left: 10px;
-          color: #0066cc;
-        }
-        
-        .evidence-item {
-          margin-bottom: 16px;
-        }
-        
-        .evidence-name {
-          display: block;
-          margin-bottom: 6px;
-          font-weight: 500;
-        }
-        
-        .ipfs-description {
-          font-size: 0.9rem;
-          color: #666;
-          margin-top: 4px;
-        }
-        
-        .ipfs-notes {
-          margin-top: 24px;
-          padding: 12px;
-          background-color: #fffde7;
-          border-left: 4px solid #ffd600;
-          border-radius: 4px;
-        }
-        
-        .ipfs-notes p {
-          margin: 0;
-          font-size: 0.9rem;
-        }
-        
-        .ipfs-popup-footer {
-          padding: 16px 20px;
-          border-top: 1px solid #eaeaea;
-          text-align: right;
-        }
-        
-        .primary-button {
-          background-color: #b4fd6a;
-          color: black;
-          border: none;
-          border-radius: 4px;
-          padding: 10px 16px;
-          cursor: pointer;
-          font-weight: 500;
-          transition: background-color 0.2s;
-        }
-        
-        .primary-button:hover {
-          background-color: #a5ff4b;
-        }
-      `}</style>
     </div>
   );
 }

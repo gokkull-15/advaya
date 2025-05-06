@@ -137,5 +137,28 @@
     color: white;
   }
 
+  .aclonica-regular {
+    font-family: "Aclonica", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  .vt323-regular {
+    font-family: "VT323", monospace;
+    font-weight: 400;
+    font-style: normal;
+  }  
 
+  .share-tech-mono-regular {
+    font-family: "Share Tech Mono", monospace;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+.cinzel-uniquifier {
+  font-family: "Cinzel", serif;
+  font-optical-sizing: auto;
+  font-weight: 50;
+  font-style: normal;
+}
   
