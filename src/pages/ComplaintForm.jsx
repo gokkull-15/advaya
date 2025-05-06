@@ -23,8 +23,8 @@ function ComplaintForm() {
   const fileInputRef = useRef(null);
 
   // Pinata configuration
-  const pinataApiKey = "f1eed63bf925da74438e";
-  const pinataApiSecret = "2a4df1e27d2cf930e707956ba0def1721c398318197317bcf7593bb8c935a811";
+  const pinataApiKey = "71789f591fbbf69470e0";
+  const pinataApiSecret = "c6d46eff100e622f8d186e897df7288902250d71a35e4971e2aed05548b8de95";
   const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
   const pinataJSONEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
 
@@ -569,14 +569,14 @@ function ComplaintForm() {
           <div className="flex space-x-4">
             <button 
               onClick={() => navigate('/')}
-              className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-['Roboto'] text-sm font-semibold transition-all duration-300 shadow-md flex items-center"
+              className="px-4 py-2 rounded-full bg-white hover:bg-gray-200 text-black font-['Roboto'] text-lg font-semibold transition-all duration-300 shadow-md flex items-center"
             >
               <FaHome className="w-5 h-5 mr-2" />
               Home
             </button>
             <button 
               onClick={() => navigate('/track-complaint')}
-              className="px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-['Roboto'] text-sm font-semibold transition-all duration-300 shadow-md flex items-center"
+              className="px-4 py-2 rounded-full bg-white hover:bg-gray-200 text-black font-['Roboto'] text-lg font-semibold transition-all duration-300 shadow-md flex items-center"
             >
               <FaSearch className="w-5 h-5 mr-2" />
               Track Complaint
