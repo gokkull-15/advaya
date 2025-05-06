@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node modules
 node_modules/
 
@@ -53,3 +54,6 @@ artifacts/
 cache/
 typechain/
 *.tsbuildinfo
+=======
+node_modules
+>>>>>>> 5432a344feeede524b2643463b7195a83019ecaf

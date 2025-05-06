@@ -7,6 +7,7 @@ import './App.css';
 import TaskDetails from './TaskDetails';
 import Dashboard from './Dashboard';
 import AIAgent from './pages/AIAgent'; // This should be your main AIAgent component
+import Gen from './Gen';
  
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/file-complaint" element={<ComplaintForm />} />
         <Route path="/track-complaint" element={<TaskDetails />} />
         <Route path="/officer" element={<Dashboard />} />
+        <Route path="/gen" element={<Gen />} />
         <Route path="/ai-agent" element={<AIAgent />} />
       </Routes>
     </Router>
