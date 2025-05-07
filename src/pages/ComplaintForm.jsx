@@ -4,130 +4,7 @@ import { FaVolumeUp, FaCar, FaExclamationTriangle, FaUserSlash, FaTrash, FaHome,
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import crypto from 'crypto-js';
-import { ethers } from 'ethers';
 import BG from "../assets/image.png";
-
-// ABI of the deployed ComplaintRegistry contract
-const CONTRACT_ABI = [
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "complaintId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "ipfsHash",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "complainant",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "ComplaintRegistered",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_ipfsHash",
-				"type": "string"
-			}
-		],
-		"name": "registerComplaint",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "complaintCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "complaints",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "ipfsHash",
-				"type": "string"
-			},
-			{
-				"internalType": "address",
-				"name": "complainant",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_complaintId",
-				"type": "uint256"
-			}
-		],
-		"name": "getComplaint",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "ipfsHash",
-				"type": "string"
-			},
-			{
-				"internalType": "address",
-				"name": "complainant",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
-
-// Deployed contract address on Base Sepolia
-const CONTRACT_ADDRESS = "0x5644104d12dBDB85b8e20dDCC723E11A6e261916"; // Replace with the address from Remix
 
 function ComplaintForm() {
   const navigate = useNavigate();
@@ -146,12 +23,11 @@ function ComplaintForm() {
   const [evidenceIpfsHashes, setEvidenceIpfsHashes] = useState([]);
   const [showIpfsPopup, setShowIpfsPopup] = useState(false);
   const [secretKey, setSecretKey] = useState('');
-  const [transactionHash, setTransactionHash] = useState(''); // Track blockchain transaction hash
   const fileInputRef = useRef(null);
 
   // Pinata configuration
-  const pinataApiKey = "f1eed63bf925da74438e";
-  const pinataApiSecret = "2a4df1e27d2cf930e707956ba0def1721c398318197317bcf7593bb8c935a811";
+  const pinataApiKey = "d691d2f9fc0680b10b50";
+  const pinataApiSecret = "7c19a36044c1b10155991e249ddd642f685ca5747f30850019710dd25a7f63de";
   const pinataEndpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS";
   const pinataJSONEndpoint = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
 
@@ -178,54 +54,6 @@ function ComplaintForm() {
     { id: 'fire', icon: <FaFire />, label: 'Fire Emergency' },
     { id: 'other', icon: <FaFileAlt />, label: 'Other' },
   ];
-
-// Function to store IPFS hash on Base Sepolia
-const storeIpfsHashOnChain = async (encryptedHash) => {
-  try {
-    if (!window.ethereum) {
-      throw new Error("MetaMask is not installed");
-    }
-
-    // Request account access
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-
-    // Ensure the user is on Base Sepolia (chainId: 84532)
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x14a34" }], // 84532 in hex
-    });
-
-    // Initialize ethers provider and signer
-    const provider = new ethers.providers.Web3Provider(window.ethereum); // Changed from BrowserProvider
-    const signer = provider.getSigner(); // Simplified signer retrieval
-
-    // Initialize contract instance
-    const complaintRegistry = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-    // Call the registerComplaint function
-    const tx = await complaintRegistry.registerComplaint(encryptedHash);
-    console.log("Transaction sent:", tx.hash);
-
-    // Wait for the transaction to be mined
-    const receipt = await tx.wait();
-    console.log("Transaction confirmed:", receipt);
-
-    setTransactionHash(tx.hash);
-    toast.success("IPFS hash stored on Base Sepolia!", {
-      duration: 4000,
-      style: {
-        background: '#CBFF96',
-        color: '#1A1A1A',
-      },
-    });
-
-    return receipt;
-  } catch (error) {
-    console.error("Error storing IPFS hash on chain:", error);
-    toast.error(`Failed to store IPFS hash: ${error.message}`);
-    throw error;
-  }
-};
 
   // Generate a random secret key for officer access
   const generateSecretKey = () => {
@@ -300,7 +128,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
         const ipfsHash = response.data.IpfsHash;
         uploadedFiles.push({
           name: file.name,
-          ipfsHash: encryptIpfsHash(ipfsHash, generateSecretKey()), // Encrypt evidence file hashes
+          ipfsHash: encryptIpfsHash(ipfsHash, generateSecretKey()),
           url: `https://ipfs.io/ipfs/${ipfsHash}`
         });
       } catch (error) {
@@ -343,7 +171,6 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
         }
       );
       
-      // Encrypt the IPFS hash
       const encryptedHash = encryptIpfsHash(response.data.IpfsHash, newSecretKey);
       return { originalHash: response.data.IpfsHash, encryptedHash };
     } catch (error) {
@@ -352,32 +179,33 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
     }
   };
 
-  // Modified handleSubmit to include blockchain storage
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
-      // Upload files to IPFS
       const uploadedFiles = await uploadFilesToIPFS();
       setEvidenceIpfsHashes(uploadedFiles);
-      
-      // Upload complaint data to IPFS
+
       const { originalHash, encryptedHash } = await uploadComplaintToIPFS(uploadedFiles);
       setComplaintIpfsHash(encryptedHash);
-      
-      // Store the encrypted IPFS hash on Base Sepolia
-      await storeIpfsHashOnChain(encryptedHash);
-      
-      toast.success("Complaint submitted and stored on blockchain!", {
+
+      toast.success("Complaint submitted successfully!", {
         duration: 4000,
         style: {
           background: '#CBFF96',
           color: '#1A1A1A',
         },
       });
-      
+
+      // Navigate to /dashboard and pass data in location state
+      navigate('/officer', {
+        state: {
+          evidenceIpfsHashes: uploadedFiles,
+          complaintIpfsHash: encryptedHash,
+        },
+      });
+
       setShowIpfsPopup(true);
-      
     } catch (error) {
       console.error("Error submitting complaint:", error);
       toast.error("Failed to submit complaint. Please try again.");
@@ -405,7 +233,6 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
     navigate('/');
   };
 
-  // Modified IpfsPopup to display transaction hash
   const IpfsPopup = () => {
     if (!showIpfsPopup) return null;
     
@@ -415,7 +242,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center">
               <FaFileAlt className="w-6 h-6 mr-2 text-blue-600" />
-              Complaint Stored on IPFS & Blockchain
+              Complaint Stored on IPFS
             </h2>
             <button 
               onClick={closePopupAndNavigate}
@@ -427,14 +254,6 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
           
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-gray-600 mb-2">Secret Key for Officers</h3>
-              <div className="p-3 bg-gray-100 rounded-lg">
-                <span className="text-sm font-mono break-all">{secretKey}</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Please save this secret key. Officers will need it to access the complaint data.</p>
-            </div>
-
-            <div>
               <h3 className="text-sm font-semibold text-gray-600 mb-2">FIR (Complete Complaint):</h3>
               <div 
                 className="p-3 bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors"
@@ -445,22 +264,6 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
               </div>
               <p className="text-xs text-gray-500 mt-1">Click to view your complete complaint details (requires secret key)</p>
             </div>
-            
-            {transactionHash && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600 mb-2">Blockchain Transaction:</h3>
-                <a
-                  href={`https://sepolia.basescan.org/tx/${transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors"
-                >
-                  <span className="text-sm font-mono break-all">{transactionHash}</span>
-                  <FaExternalLinkAlt className="text-blue-600 ml-2" />
-                </a>
-                <p className="text-xs text-gray-500 mt-1">View transaction on Base Sepolia Explorer</p>
-              </div>
-            )}
             
             {evidenceIpfsHashes.length > 0 && (
               <div>
@@ -484,7 +287,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r">
               <p className="text-sm text-gray-700">
-                Please save these IPFS hashes, the secret key, and the transaction hash for your records. They provide permanent access to your complaint data.
+                Please save these IPFS hashes for your records. They provide permanent access to your complaint data.
               </p>
             </div>
           </div>
@@ -507,8 +310,8 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
       case 1:
         return (
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 1: Complaint Type</h2>
-            <p className="text-gray-200 mb-6">Select the type of complaint you want to register</p>
+            <h2 className="text-2xl font-bold text-white share-tech-mono-regular mb-2">Step 1: Complaint Type</h2>
+            <p className="text-gray-200 mb-6 share-tech-mono-regular">Select the type of complaint you want to register</p>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
               {complaintTypes.map((type) => (
@@ -524,9 +327,9 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             </div>
 
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Brief Description</h3>
+              <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Brief Description</h3>
               <textarea
-                className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
+                className="w-full px-4 py-3 bg-white bg-opacity-20 share-tech-mono-regular text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                 placeholder="Please describe the issue in detail"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -537,12 +340,12 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             <div className="flex justify-between">
               <button 
                 onClick={() => navigate('/')}
-                className="px-6 py-2 bg-gray-600 vt323-regular text-2xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 bg-gray-600 share-tech-mono-regular text-xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Cancel
               </button>
               <button 
-                className={`px-6 py-2 rounded-full font-semibold vt323-regular text-2xl transition-all duration-300 ${!selectedType || !description.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                className={`px-6 py-2 rounded-full font-semibold share-tech-mono-regular text-xl transition-all duration-300 ${!selectedType || !description.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 disabled={!selectedType || !description.trim()}
                 onClick={handleNext}
               >
@@ -554,11 +357,11 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
       case 2:
         return (
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 2: Location Details</h2>
-            <p className="text-gray-200 mb-6">Provide the location where the incident occurred</p>
+            <h2 className="text-2xl font-bold text-white mb-2 share-tech-mono-regular">Step 2: Location Details</h2>
+            <p className="text-gray-200 mb-6 share-tech-mono-regular">Provide the location where the incident occurred</p>
 
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Address</h3>
+              <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Address</h3>
               <div className="relative">
                 <input
                   type="text"
@@ -595,12 +398,12 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             <div className="flex justify-between">
               <button 
                 onClick={handleBack}
-                className="px-6 py-2 bg-gray-600 vt323-regular text-2xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 bg-gray-600 share-tech-mono-regular text-xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Back
               </button>
               <button 
-                className={`px-6 py-2 vt323-regular text-2xl rounded-full font-semibold transition-all duration-300 ${!location.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                className={`px-6 py-2 share-tech-mono-regular text-xl rounded-full font-semibold transition-all duration-300 ${!location.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 disabled={!location.trim()}
                 onClick={handleNext}
               >
@@ -612,37 +415,37 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
       case 3:
         return (
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 3: Witness Details</h2>
-            <p className="text-gray-200 mb-6">Provide details of any witnesses to the incident</p>
+            <h2 className="text-2xl font-bold text-white mb-2 share-tech-mono-regular">Step 3: Witness Details</h2>
+            <p className="text-gray-200 mb-6 share-tech-mono-regular">Provide details of any witnesses to the incident</p>
 
             <div className="mb-8">
               {witnessDetails.map((witness, index) => (
                 <div key={index} className="bg-white bg-opacity-10 rounded-lg p-4 mb-4">
-                  <h4 className="text-lg font-semibold text-white mb-2">Witness {index + 1}</h4>
+                  <h4 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Witness {index + 1}</h4>
                   <input
                     type="text"
                     placeholder="Witness Name"
                     value={witness.name}
                     onChange={(e) => handleWitnessChange(index, 'name', e.target.value)}
-                    className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300 mb-3"
+                    className="w-full px-4 py-3 share-tech-mono-regular bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300 mb-3"
                   />
                   <input
                     type="text"
                     placeholder="Contact Information"
                     value={witness.contact}
                     onChange={(e) => handleWitnessChange(index, 'contact', e.target.value)}
-                    className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300 mb-3"
+                    className="w-full px-4 py-3 share-tech-mono-regular bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300 mb-3"
                   />
                   <textarea
                     placeholder="Witness Statement"
                     value={witness.statement}
                     onChange={(e) => handleWitnessChange(index, 'statement', e.target.value)}
-                    className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
+                    className="w-full px-4 py-3 share-tech-mono-regular bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                     rows={3}
                   />
                   {index > 0 && (
                     <button 
-                      className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all duration-300"
+                      className="mt-3 px-4 py-2 bg-red-600 share-tech-mono-regular hover:bg-red-700 text-white rounded-lg font-semibold transition-all duration-300"
                       onClick={() => removeWitness(index)}
                     >
                       Remove Witness
@@ -651,7 +454,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
                 </div>
               ))}
               <button 
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-all duration-300"
+                className="px-4 py-2 bg-purple-600 share-tech-mono-regular hover:bg-purple-700 text-white rounded-lg font-semibold transition-all duration-300"
                 onClick={addWitness}
               >
                 Add Another Witness
@@ -661,12 +464,12 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             <div className="flex justify-between">
               <button 
                 onClick={handleBack}
-                className="px-6 py-2 bg-gray-600 vt323-regular text-2xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 bg-gray-600 share-tech-mono-regular text-xl hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Back
               </button>
               <button 
-                className="px-6 py-2 vt323-regular text-2xl bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 share-tech-mono-regular text-xl bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all duration-300"
                 onClick={handleNext}
               >
                 Next
@@ -677,8 +480,8 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
       case 4:
         return (
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 4: Evidence Submission</h2>
-            <p className="text-gray-200 mb-6">Upload photos, videos, or audio recordings related to your complaint</p>
+            <h2 className="text-2xl font-bold text-white mb-2 share-tech-mono-regular">Step 4: Evidence Submission</h2>
+            <p className="text-gray-200 mb-6 share-tech-mono-regular">Upload photos, videos, or audio recordings related to your complaint</p>
 
             <div className="mb-8">
               <div 
@@ -686,8 +489,8 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <FaUpload className="mx-auto text-3xl text-gray-300 mb-3" />
-                <p className="text-gray-300">Click to upload files</p>
-                <p className="text-sm text-gray-400 mt-1">Supports images, videos, and audio files</p>
+                <p className="text-gray-300 share-tech-mono-regular">Click to upload files</p>
+                <p className="text-sm text-gray-400 mt-1 share-tech-mono-regular">Supports images, videos, and audio files</p>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -699,7 +502,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
 
               {selectedFiles.length > 0 && (
                 <div className="mt-4 bg-white bg-opacity-10 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-white mb-2">Selected Files:</h4>
+                  <h4 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Selected Files:</h4>
                   <ul className="space-y-2">
                     {selectedFiles.map((file, index) => (
                       <li key={index} className="text-gray-200 flex items-center">
@@ -714,7 +517,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
               )}
 
               <div className="mt-6">
-                <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Evidence Description</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Evidence Description</h3>
                 <textarea
                   className="w-full px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-300"
                   placeholder="Add any additional information about the evidence..."
@@ -728,13 +531,13 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             <div className="flex justify-between">
               <button 
                 onClick={handleBack}
-                className="px-6 py-2 vt323-regular text-2xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 share-tech-mono-regular text-xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Back
               </button>
               <button 
                 onClick={handleNext}
-                className="px-6 py-2 vt323-regular text-2xl bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 share-tech-mono-regular text-xl bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Next
               </button>
@@ -744,11 +547,11 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
       case 5:
         return (
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 5: Contact Information</h2>
-            <p className="text-gray-200 mb-6">Provide your contact details so we can update you on your complaint</p>
+            <h2 className="text-2xl font-bold text-white mb-2 share-tech-mono-regular">Step 5: Contact Information</h2>
+            <p className="text-gray-200 mb-6 share-tech-mono-regular">Provide your contact details so we can update you on your complaint</p>
 
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-white mb-2 aclonica-regular">Email Address</h3>
+              <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Email Address</h3>
               <div className="relative">
                 <input
                   type="email"
@@ -785,12 +588,12 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             <div className="flex justify-between">
               <button 
                 onClick={handleBack}
-                className="px-6 py-2 vt323-regular text-2xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 share-tech-mono-regular text-xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Back
               </button>
               <button 
-                className={`px-6 py-2 vt323-regular text-2xl rounded-full font-semibold transition-all duration-300 ${!email.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                className={`px-6 py-2 share-tech-mono-regular text-xl rounded-full font-semibold transition-all duration-300 ${!email.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 disabled={!email.trim()}
                 onClick={handleNext}
               >
@@ -802,34 +605,34 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
       case 6:
         return (
           <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-2 aclonica-regular">Step 6: Review & Submit</h2>
-            <p className="text-gray-200 mb-6">Please review your complaint details before submitting</p>
+            <h2 className="text-2xl font-bold text-white mb-2 share-tech-mono-regular">Step 6: Review & Submit</h2>
+            <p className="text-gray-200 mb-6 share-tech-mono-regular">Please review your complaint details before submitting</p>
 
             <div className="mb-8 space-y-6">
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Complaint Type</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Complaint Type</h3>
                 <p className="text-gray-200 font-medium">{getSelectedComplaintType()}</p>
                 <p className="text-gray-300 mt-2">{description}</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Location</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Location</h3>
                 <p className="text-gray-200">{location}</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Witnesses</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Witnesses</h3>
                 {witnessDetails.map((witness, index) => (
                   <div key={index} className="mb-3 p-3 bg-gray-700 bg-opacity-50 rounded-lg">
-                    <p className="text-gray-200 font-medium">Witness {index + 1}: {witness.name}</p>
-                    <p className="text-gray-300">Contact: {witness.contact}</p>
-                    <p className="text-gray-300">Statement: {witness.statement}</p>
+                    <p className="text-gray-200 font-medium share-tech-mono-regular">Witness {index + 1}: {witness.name}</p>
+                    <p className="text-gray-300 share-tech-mono-regular">Contact: {witness.contact}</p>
+                    <p className="text-gray-300 share-tech-mono-regular">Statement: {witness.statement}</p>
                   </div>
                 ))}
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Evidence</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Evidence</h3>
                 <p className="text-gray-200 font-medium">
                   {selectedFiles.length > 0 
                     ? `${selectedFiles.length} file(s) selected` 
@@ -841,12 +644,12 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Contact Information</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 share-tech-mono-regular">Contact Information</h3>
                 <p className="text-gray-200">{email}</p>
               </div>
 
               <div className="bg-yellow-500 bg-opacity-20 rounded-xl p-4 border-l-4 border-yellow-400">
-                <p className="text-yellow-100">
+                <p className="text-yellow-100 share-tech-mono-regular">
                   Your complaint data will be stored securely on IPFS with encrypted access for authorized officers.
                 </p>
               </div>
@@ -855,7 +658,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
             <div className="flex justify-between">
               <button 
                 onClick={handleBack}
-                className="px-6 py-2 vt323-regular text-2xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
+                className="px-6 py-2 share-tech-mono-regular text-xl bg-gray-600 hover:bg-gray-700 text-white rounded-full font-semibold transition-all duration-300"
               >
                 Back
               </button>
@@ -868,11 +671,11 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="vt323-regular text-2xl opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <path className="share-tech-mono-regular text-xl opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Submitting...
                   </>
-                ) : <span className='vt323-regular text-2xl'>Submit Complaint</span>}
+                ) : <span className='share-tech-mono-regular text-xl'>Submit Complaint</span>}
               </button>
             </div>
           </div>
@@ -886,18 +689,18 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
     <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: `url(${BG})` }}>
       <div className="bg-black bg-opacity-60 min-h-screen">
         <header className="flex justify-between items-center p-6 bg-gradient-to-r from-purple-900 to-indigo-900 shadow-lg">
-          <div className="text-3xl font-bold text-white font-['Pacifico']">TN-KUN</div>
+          <div className="text-3xl font-bold text-white aclonica-regular">TN-KUN</div>
           <div className="flex space-x-4">
             <button 
               onClick={() => navigate('/')}
-              className="px-4 py-2 rounded-full bg-white hover:bg-gray-200 text-black font-['Roboto'] text-lg font-semibold transition-all duration-300 shadow-md flex items-center"
+              className="px-4 py-2 rounded-full bg-white hover:bg-gray-200 text-black share-tech-mono-regular text-lg font-semibold transition-all duration-300 shadow-md flex items-center"
             >
               <FaHome className="w-5 h-5 mr-2" />
               Home
             </button>
             <button 
               onClick={() => navigate('/track-complaint')}
-              className="px-4 py-2 rounded-full bg-white hover:bg-gray-200 text-black font-['Roboto'] text-lg font-semibold transition-all duration-300 shadow-md flex items-center"
+              className="px-4 py-2 rounded-full bg-white hover:bg-gray-200 text-black share-tech-mono-regular text-lg font-semibold transition-all duration-300 shadow-md flex items-center"
             >
               <FaSearch className="w-5 h-5 mr-2" />
               Track Complaint
@@ -907,7 +710,7 @@ const storeIpfsHashOnChain = async (encryptedHash) => {
 
         <main className="max-w-6xl mx-auto px-6 py-1">
           <div className="text-center mb-6">
-            <h1 className="text-5xl font-bold text-white mb-4 aclonica-regular">Register New Complaint</h1>
+            <h1 className="font-bold text-white mb-4 vt323-regular text-7xl">Register New Complaint</h1>
             <p className="text-xl text-gray-200 max-w-2xl mx-auto share-tech-mono-regular">
               Please provide the details of your complaint. All information will be stored securely.
             </p>

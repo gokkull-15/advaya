@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Mic, Square, Send, Volume2, Globe, User, Trash2 } from 'lucide-react';
 import axios from 'axios';
+import BG from "../assets/ai.png"
 
 // Types
 const LANGUAGES = {
@@ -158,39 +159,40 @@ const MessageItem = ({ message }) => {
   };
 
   return (
-    <div className={`flex ${isAi ? 'justify-start' : 'justify-end'} mb-4 group`}>
+    <div className={`flex ${isAi ? 'justify-start' : 'justify-end'} mb-4 group`} >
       <div className={`relative max-w-[80%] px-4 py-3 rounded-lg shadow-sm ${
-        isAi ? 'bg-blue-100 text-gray-800 rounded-tl-none' : 'bg-indigo-600 text-white rounded-tr-none'
+        isAi ? 'bg-white text-black rounded-tl-none' : 'bg-gray-300 text-black rounded-tr-none'
       }`}>
         <div className="flex items-start mb-1">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${
-            isAi ? 'bg-blue-500 text-white' : 'bg-indigo-800 text-white'
+            isAi ? 'bg-gray-300 text-black' : 'bg-gray-500 text-black'
           }`}>
             {isAi ? (
               <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <div className="w-2 h-2 rounded-full bg-black" />
               </div>
             ) : (
               <User size={16} />
             )}
           </div>
           <div className="flex-1">
-            <p className={`text-sm font-medium ${isAi ? 'text-blue-700' : 'text-white'}`}>
+            <p className={`text-sm font-medium ${isAi ? 'text-black' : 'text-black'}`}>
               {isAi ? 'AI Lawyer' : 'You'}
             </p>
-            <p className={`text-xs opacity-70 ${isAi ? 'text-gray-600' : 'text-blue-100'}`}>
-              {new Date(message.timestamp).toLocaleTimeString()}
-            </p>
+            
           </div>
         </div>
-        <p className={`text-md ${isAi ? 'text-gray-800' : 'text-white'}`}>
+        <p className={`text-md ${isAi ? 'text-gray-800' : 'text-black'}`}>
           {message.text}
         </p>
+        <p className={`text-xs opacity-70 ${isAi ? 'text-gray-600' : 'text-gray-600'}`}>
+              {new Date(message.timestamp).toLocaleTimeString()}
+            </p>
         {isAi && (
           <button
             onClick={handleSpeak}
             className={`absolute bottom-1 right-1 p-1.5 rounded-full transition-opacity duration-200 ${
-              isAi ? 'text-blue-600 hover:bg-blue-200' : 'text-blue-100 hover:bg-indigo-700'
+              isAi ? 'text-gray-600 hover:bg-blue-200' : 'text-blue-100 hover:bg-gray-700'
             } opacity-0 group-hover:opacity-100`}
             title={isSpeaking ? 'Stop speaking' : 'Listen'}
           >
@@ -345,7 +347,7 @@ const AIAgent = () => {
   const clearMessages = () => setMessages([]);
 
   return (
-    <div className="flex flex-col h-screen max-h-screen bg-gray-50">
+    <div className="flex flex-col h-screen max-h-screen bg-gray-100" style={{ backgroundImage: `url(${BG})`, backgroundSize: 'cover', backgroundPosition: 'center' }} >
       <style>
         {`
           .custom-scrollbar::-webkit-scrollbar {
@@ -365,16 +367,16 @@ const AIAgent = () => {
         `}
       </style>
       {/* Header */}
-      <header className="p-4 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between">
+      <header className="p-4 border-b border-gray-200 shadow-sm flex items-center justify-between" >
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center mr-3">
+          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mr-3">
             <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-indigo-600" />
+              <div className="w-3 h-3 rounded-full bg-black" />
             </div>
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-800">AI Lawyer</h1>
-            <p className="text-sm text-gray-500">Multilingual Legal Assistant</p>
+            <h1 className="text-xl font-semibold text-white">AI Lawyer</h1>
+            <p className="text-sm text-blue-50">Multilingual Legal Assistant</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -400,7 +402,7 @@ const AIAgent = () => {
                 <button
                   key={key}
                   className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors flex items-center justify-between ${
-                    currentLanguage === key ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'
+                    currentLanguage === key ? 'bg-indigo-50 text-black' : 'text-gray-700'
                   }`}
                   onClick={() => setCurrentLanguage(key)}
                 >
@@ -417,8 +419,8 @@ const AIAgent = () => {
       <div className="flex-1 h-full relative">
         <div className="flex-1 max-h-full overflow-y-auto px-4 py-2 custom-scrollbar">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <div className="h-full flex flex-col items-center justify-center text-white">
+              <div className="w-16 h-16 mb-4 rounded-full bg-gray-700 flex items-center justify-center">
                 <div className="w-8 h-8 rounded-full bg-gray-300" />
               </div>
               <p className="text-center text-lg font-medium mb-1">
@@ -440,7 +442,7 @@ const AIAgent = () => {
         
         {isProcessing && (
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white to-transparent h-16 flex items-end justify-center pb-2">
-            <div className="bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-full shadow-md flex items-center">
+            <div className="bg-black text-white text-sm px-4 py-1.5 rounded-full shadow-md flex items-center">
               <div className="flex space-x-1 mr-2">
                 {[0, 1, 2].map(i => (
                   <div
@@ -457,7 +459,7 @@ const AIAgent = () => {
       </div>
   
       {/* Voice controls and input */}
-      <div className="px-4 py-3 bg-white border-t border-gray-200">
+      <div className="px-4 py-3 border-t border-gray-200">
         {voiceState.isRecording && (
           <div className="flex items-center justify-between bg-gray-100 rounded-lg p-4 mb-3">
             <div className="flex-1">
@@ -470,7 +472,7 @@ const AIAgent = () => {
             </div>
             <button
               onClick={stopRecording}
-              className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+              className="p-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-colors"
               aria-label="Stop recording"
             >
               <Square size={18} />
@@ -483,8 +485,8 @@ const AIAgent = () => {
             onClick={voiceState.isRecording ? stopRecording : startRecording}
             className={`p-3 rounded-full mr-3 transition-colors ${
               voiceState.isRecording
-                ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                ? 'bg-gray-500 text-white hover:bg-gray-600'
+                : 'bg-black text-white hover:bg-black'
             }`}
             aria-label={voiceState.isRecording ? 'Stop recording' : 'Start recording'}
           >
@@ -501,14 +503,14 @@ const AIAgent = () => {
                 }
               }}
               placeholder={UI_TEXT[currentLanguage].typeMessage}
-              className="w-full resize-none p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full resize-none p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all text-white"
               rows={1}
               style={{ maxHeight: '120px', minHeight: '46px' }}
             />
             <button
               onClick={handleSendMessage}
               disabled={!inputText.trim()}
-              className="absolute right-2 bottom-2 p-2 text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="absolute right-2 bottom-2 p-2 text-black hover:bg-indigo-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Send message"
             >
               <Send size={20} />

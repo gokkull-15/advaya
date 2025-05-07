@@ -375,7 +375,7 @@ function HomePage() {
     <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: `url(${BG})` }}>
       <div className="bg-black bg-opacity-60 min-h-screen">
         <header className="flex justify-between items-center p-6 bg-gradient-to-r from-purple-900 to-indigo-900 shadow-lg">
-          <div className="text-3xl font-bold text-white font-['Pacifico']">TN-KUN</div>
+          <div className="text-3xl font-bold text-white aclonica-regular">TN-KUN</div>
           <div className="flex space-x-4">
             <button 
               onClick={toggleSosMode}
